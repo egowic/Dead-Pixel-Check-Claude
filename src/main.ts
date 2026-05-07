@@ -8,7 +8,7 @@ function showLanding(): void {
 }
 
 function showChecker(): void {
-  renderChecker(root, showLanding);
+  renderChecker(showLanding);
 }
 
 showLanding();

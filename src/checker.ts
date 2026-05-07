@@ -2,109 +2,90 @@ import { COLORS } from './colors';
 
 export class Checker {
   private index = 0;
-  private hudTimer: ReturnType<typeof setTimeout> | null = null;
-  private hud: HTMLElement | null = null;
+  private overlay!: HTMLDivElement;
+  private hud!: HTMLDivElement;
+  private finishing = false;
   private readonly onExit: () => void;
 
   constructor(onExit: () => void) {
     this.onExit = onExit;
   }
 
-  start(root: HTMLElement): void {
+  start(): void {
     this.index = 0;
+    this.finishing = false;
 
-    this.hud = this.buildHud(root);
+    this.overlay = document.createElement('div');
+    this.overlay.className = 'color-overlay';
+    // Set initial color BEFORE adding to DOM — no flash.
+    this.overlay.style.backgroundColor = COLORS[0].hex;
 
-    this.paint();
-    this.enterFullscreen(root);
-
-    window.addEventListener('keydown', this.handleKey);
-    window.addEventListener('click', this.handleAdvance);
-    window.addEventListener('touchstart', this.handleAdvance, { passive: true });
-  }
-
-  private buildHud(root: HTMLElement): HTMLElement {
-    const hud = document.createElement('div');
-    hud.className = 'hud';
-    root.appendChild(hud);
-    return hud;
-  }
-
-  private paint(): void {
-    const color = COLORS[this.index];
-    document.body.style.backgroundColor = color.hex;
-    document.body.classList.add('checking');
-
-    if (this.hud) {
-      this.hud.textContent = `${color.name} — ${this.index + 1} / ${COLORS.length}`;
-      this.hud.classList.remove('hud--hidden');
-    }
-
-    if (this.hudTimer !== null) clearTimeout(this.hudTimer);
-    this.hudTimer = setTimeout(() => {
-      this.hud?.classList.add('hud--hidden');
-    }, 1500);
-  }
-
-  private handleKey = (e: KeyboardEvent): void => {
-    if (e.key === 'Escape') {
+    const exitBtn = document.createElement('button');
+    exitBtn.type = 'button';
+    exitBtn.className = 'exit-btn';
+    exitBtn.setAttribute('aria-label', 'Exit');
+    exitBtn.textContent = '✕';
+    exitBtn.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
       this.finish();
-      return;
-    }
-    if (e.key === 'ArrowLeft') {
-      this.prev();
-      return;
-    }
-    e.preventDefault();
+    });
+
+    this.hud = document.createElement('div');
+    this.hud.className = 'hud';
+
+    this.overlay.append(exitBtn, this.hud);
+    document.body.appendChild(this.overlay);
+    this.updateHud();
+
+    // pointerdown fires BEFORE click. The original "Start" button click
+    // produced its pointerdown sequence on the button, which has already
+    // ended by the time we attach this listener. So this listener will
+    // only ever fire on NEW pointer events from inside the overlay.
+    this.overlay.addEventListener('pointerdown', this.handleAdvance);
+    window.addEventListener('keydown', this.handleKey);
+  }
+
+  private updateHud(): void {
+    const c = COLORS[this.index];
+    this.hud.textContent = `${c.name}   ${this.index + 1} / ${COLORS.length}`;
+  }
+
+  private handleAdvance = (e: Event): void => {
+    e.stopPropagation();
     this.next();
   };
 
-  private handleAdvance = (): void => {
+  private handleKey = (e: KeyboardEvent): void => {
+    if (e.key === 'Escape') { this.finish(); return; }
+    // Ignore key-repeat from a held key (e.g. holding Enter on Start button).
+    if (e.repeat) return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { this.prev(); return; }
+    e.preventDefault();
     this.next();
   };
 
   next(): void {
     this.index++;
-    if (this.index >= COLORS.length) {
-      this.finish();
-      return;
-    }
-    this.paint();
+    if (this.index >= COLORS.length) { this.finish(); return; }
+    this.overlay.style.backgroundColor = COLORS[this.index].hex;
+    this.updateHud();
   }
 
   prev(): void {
     if (this.index > 0) {
       this.index--;
-      this.paint();
+      this.overlay.style.backgroundColor = COLORS[this.index].hex;
+      this.updateHud();
     }
   }
 
   finish(): void {
-    if (this.hudTimer !== null) {
-      clearTimeout(this.hudTimer);
-      this.hudTimer = null;
-    }
+    if (this.finishing) return;
+    this.finishing = true;
 
+    this.overlay.removeEventListener('pointerdown', this.handleAdvance);
     window.removeEventListener('keydown', this.handleKey);
-    window.removeEventListener('click', this.handleAdvance);
-    window.removeEventListener('touchstart', this.handleAdvance);
-
-    document.body.style.backgroundColor = '';
-    document.body.classList.remove('checking');
-
-    this.exitFullscreen();
+    this.overlay.remove();
     this.onExit();
-  }
-
-  private enterFullscreen(el: HTMLElement): void {
-    el.requestFullscreen?.().catch(() => {
-      // Fullscreen rejected (e.g. desktop policy) — continue without it
-    });
-  }
-
-  private exitFullscreen(): void {
-    if (document.fullscreenElement) {
-      document.exitFullscreen?.().catch(() => undefined);
-    }
   }
 }
