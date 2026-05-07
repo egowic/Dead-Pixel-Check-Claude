@@ -47,7 +47,9 @@ export class Checker {
 
     this.overlay.append(exitBtn, this.hud);
     document.body.appendChild(this.overlay);
-    this.updateHud();
+    // Give the first color extra time — fullscreen transition overlaps the
+    // initial render so the HUD would otherwise vanish before it's visible.
+    this.updateHud(1800);
 
     this.overlay.addEventListener('pointerdown', this.handleAdvance);
     window.addEventListener('keydown', this.handleKey);
@@ -59,12 +61,12 @@ export class Checker {
 
   private hudTimer: ReturnType<typeof setTimeout> | null = null;
 
-  private updateHud(): void {
+  private updateHud(delay = 900): void {
     const c = COLORS[this.index];
     this.hud.textContent = `${c.name}   ${this.index + 1} / ${COLORS.length}`;
     this.hud.classList.remove('hud--hidden');
     if (this.hudTimer) clearTimeout(this.hudTimer);
-    this.hudTimer = setTimeout(() => this.hud.classList.add('hud--hidden'), 900);
+    this.hudTimer = setTimeout(() => this.hud.classList.add('hud--hidden'), delay);
   }
 
   private handleFsChange = (): void => {
