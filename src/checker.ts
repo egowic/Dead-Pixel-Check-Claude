@@ -57,9 +57,14 @@ export class Checker {
     this.requestFs();
   }
 
+  private hudTimer: ReturnType<typeof setTimeout> | null = null;
+
   private updateHud(): void {
     const c = COLORS[this.index];
     this.hud.textContent = `${c.name}   ${this.index + 1} / ${COLORS.length}`;
+    this.hud.classList.remove('hud--hidden');
+    if (this.hudTimer) clearTimeout(this.hudTimer);
+    this.hudTimer = setTimeout(() => this.hud.classList.add('hud--hidden'), 900);
   }
 
   private handleFsChange = (): void => {
@@ -112,6 +117,7 @@ export class Checker {
     document.removeEventListener('fullscreenchange', this.handleFsChange);
     document.removeEventListener('webkitfullscreenchange', this.handleFsChange);
 
+    if (this.hudTimer) { clearTimeout(this.hudTimer); this.hudTimer = null; }
     this.overlay.remove();
     this.exitFs();
     this.onExit();

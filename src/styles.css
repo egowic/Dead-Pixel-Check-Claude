@@ -137,16 +137,20 @@ kbd {
   transform: translateX(-50%);
   padding: 0.45rem 1.1rem;
   border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.5);
   font-size: 0.85rem;
   font-weight: 500;
   color: #ffffff;
   letter-spacing: 0.05em;
   pointer-events: none;
   white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.35s ease;
 }
 
-/* ─── Exit button ────────────────────────────────────────────────────────── */
+.hud--hidden { opacity: 0; }
+
+/* ─── Exit button — invisible until hovered ──────────────────────────────── */
 .exit-btn {
   position: absolute;
   top: 1.25rem;
@@ -158,12 +162,12 @@ kbd {
   justify-content: center;
   border: none;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.55);
-  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.45);
+  color: #ffffff;
   font-size: 1rem;
   cursor: pointer;
-  opacity: 0.6;
-  transition: opacity 0.2s ease;
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
 .exit-btn:hover { opacity: 1; }
