@@ -8,19 +8,23 @@ A minimal, full-screen tool for inspecting displays for dead, stuck, or subpixel
 
 | Action | Effect |
 |---|---|
-| `Space` / `Click` / `Tap` | Next color |
+| `Click` / `Space` / `Tap` | Next color |
 | `←` | Previous color |
-| `Esc` / `✕` button | Exit |
+| `Esc` / hover `✕` | Exit |
 
-## Colors
+Colors loop continuously — exit when done.
 
-9-color sequence: Black → White → Red → Green → Blue → Cyan → Magenta → Yellow → Gray
+## Color sequence
+
+ISO 13406-2 order (9 colors, looping):
+
+Black → White → Red → Green → Blue → Cyan → Magenta → Yellow → Gray
 
 ## Dev
 
 ```bash
 npm install
-npm run dev    # http://localhost:5173
+npm run dev    # http://localhost:5173/Dead-Pixel-Check-Claude/
 npm run build  # output → dist/
 ```
 
