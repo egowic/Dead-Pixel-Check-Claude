@@ -94,8 +94,7 @@ export class Checker {
   };
 
   next(): void {
-    this.index++;
-    if (this.index >= COLORS.length) { this.finish(); return; }
+    this.index = (this.index + 1) % COLORS.length;
     this.overlay.style.backgroundColor = COLORS[this.index].hex;
     this.updateHud();
   }
